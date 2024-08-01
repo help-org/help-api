@@ -1,0 +1,9 @@
+version: '3'
+
+tasks:
+  develop:
+    cmds:
+      - cmd: go install github.com/golang/mock/mockgen@v1.6
+  compile:
+    cmds:
+      - cmd: go build
