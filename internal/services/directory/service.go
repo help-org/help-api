@@ -16,6 +16,10 @@ func NewService(db *sql.DB) *Service {
 	return &Service{database: db}
 }
 
+func (s *Service) RegisterRoutes(mux *chi.Mux) {
+	mux.Get("/countries/{country}/states/{state}/cities/{city}", s.ListLocal)
+}
+
 func (s *Service) ListLocal(w http.ResponseWriter, r *http.Request) {
 	directory := &Directory{
 		Country: chi.URLParam(r, "country"),
