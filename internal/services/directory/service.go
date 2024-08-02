@@ -3,8 +3,9 @@ package directory
 import (
 	"database/sql"
 	"encoding/json"
-	"github.com/go-chi/chi"
 	"net/http"
+
+	"github.com/go-chi/chi/v5"
 )
 
 type Service struct {
