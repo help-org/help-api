@@ -1,0 +1,7 @@
+name: directory-api
+services:
+  directory-api:
+    image: directory-api:latest
+    container_name: directory-api
+    ports:
+      - 8080:8080
