@@ -1,1 +1,1 @@
-GET http://localhost:8080/directory
+GET http://localhost:8080/countries/US/states/MA/cities/Boston

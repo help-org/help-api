@@ -3,6 +3,7 @@ package directory
 import (
 	"database/sql"
 	"encoding/json"
+	"github.com/go-chi/chi"
 	"net/http"
 )
 
@@ -14,8 +15,11 @@ func NewService(db *sql.DB) *Service {
 	return &Service{database: db}
 }
 
-func (s *Service) ListLocal(writer http.ResponseWriter, request *http.Request) {
+func (s *Service) ListLocal(w http.ResponseWriter, r *http.Request) {
 	directory := &Directory{
+		Country: chi.URLParam(r, "country"),
+		State:   chi.URLParam(r, "state"),
+		City:    chi.URLParam(r, "city"),
 		Listings: []*Listing{
 			{
 				Type:  POLICE,
@@ -33,10 +37,15 @@ func (s *Service) ListLocal(writer http.ResponseWriter, request *http.Request) {
 	}
 
 	response, err := json.Marshal(directory)
-
-	writer.WriteHeader(http.StatusOK)
-	_, err = writer.Write(response)
 	if err != nil {
+		http.Error(w, "Error marshalling JSON", http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	_, err = w.Write(response)
+	if err != nil {
+		http.Error(w, "Error writing response", http.StatusInternalServerError)
 		return
 	}
 }

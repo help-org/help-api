@@ -4,6 +4,9 @@ import (
 	"database/sql"
 	"net/http"
 
+	"github.com/go-chi/chi"
+	"github.com/go-chi/chi/middleware"
+
 	"directory/internal/services/directory"
 )
 
@@ -11,37 +14,19 @@ type routes map[string]map[string]http.HandlerFunc
 type methods map[string]http.HandlerFunc
 
 type Router struct {
-	routes routes
+	Mux *chi.Mux
 }
 
 func New(db *sql.DB) (router *Router) {
 	router = &Router{
-		routes: make(routes),
+		Mux: chi.NewRouter(),
 	}
 
-	service := directory.NewService(db)
+	router.Mux.Use(middleware.Logger)
 
-	router.addRoute("GET", "/directory", service.ListLocal)
+	directoryService := directory.NewService(db)
+
+	router.Mux.Get("/countries/{country}/states/{state}/cities/{city}", directoryService.ListLocal)
 
 	return
-}
-
-func (r *Router) ServeHTTP(w http.ResponseWriter, req *http.Request) {
-	if handlers, ok := r.routes[req.URL.Path]; ok {
-		if handler, methodExists := handlers[req.Method]; methodExists {
-			handler(w, req)
-
-			return
-		}
-	}
-
-	http.NotFound(w, req)
-}
-
-func (r *Router) addRoute(method, path string, handler http.HandlerFunc) {
-	if r.routes[path] == nil {
-		r.routes[path] = make(methods)
-	}
-
-	r.routes[path][method] = handler
 }

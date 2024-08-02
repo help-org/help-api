@@ -30,7 +30,7 @@ func (c *Command) Run() error {
 
 	s := &server.Server{
 		Address:           cfg.Server.Address,
-		Handler:           router.New(database.New(cfg.Database.Driver, cfg.Database.Source)),
+		Handler:           router.New(database.New(cfg.Database.Driver, cfg.Database.Source)).Mux,
 		ReadHeaderTimeout: cfg.Server.ReadHeaderTimeout,
 	}
 

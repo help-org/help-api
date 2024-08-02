@@ -1,6 +1,10 @@
 package directory
 
 type Directory struct {
+	Country string `json:"country"`
+	State   string `json:"state"`
+	City    string `json:"city"`
+
 	Listings []*Listing `json:"listings"`
 	Ads      []*Ad      `json:"ads"`
 }
