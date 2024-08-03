@@ -12,8 +12,8 @@ type Service struct {
 	database *sql.DB
 }
 
-func NewService(db *sql.DB) *Service {
-	return &Service{database: db}
+func New() *Service {
+	return &Service{}
 }
 
 func (s *Service) RegisterRoutes(mux *chi.Mux) {

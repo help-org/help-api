@@ -2,6 +2,7 @@ package cli
 
 import (
 	"context"
+	"directory/internal/services"
 	version "directory/pkg"
 	"fmt"
 	"golang.org/x/sync/errgroup"
@@ -9,7 +10,6 @@ import (
 	"os/signal"
 	"syscall"
 
-	"directory/pkg/database"
 	"directory/pkg/logger"
 	"directory/pkg/router"
 	"directory/pkg/server"
@@ -28,9 +28,14 @@ func (c *Command) Run() error {
 		os.Exit(1)
 	}
 
+	handler := router.New()
+	for _, service := range services.Services {
+		service.RegisterRoutes(handler)
+	}
+
 	s := &server.Server{
 		Address:           cfg.Server.Address,
-		Handler:           router.New(database.New(cfg.Database.Driver, cfg.Database.Source)).Mux,
+		Handler:           handler,
 		ReadHeaderTimeout: cfg.Server.ReadHeaderTimeout,
 	}
 
