@@ -2,14 +2,15 @@ package cli
 
 import (
 	"context"
-	"directory/internal/services"
-	version "directory/pkg"
 	"fmt"
-	"golang.org/x/sync/errgroup"
 	"os"
 	"os/signal"
 	"syscall"
 
+	"golang.org/x/sync/errgroup"
+
+	"directory/internal/services"
+	version "directory/pkg"
 	"directory/pkg/logger"
 	"directory/pkg/router"
 	"directory/pkg/server"
@@ -22,7 +23,7 @@ func (c *Command) Run() error {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 
-	cfg, err := load()
+	cfg, err := configFromEnv()
 	if err != nil {
 		logger.Error(ctx, "error loading configuration", err)
 		os.Exit(1)

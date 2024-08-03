@@ -1,11 +1,12 @@
 package cli
 
 import (
-	"directory/pkg/config"
 	"github.com/kelseyhightower/envconfig"
+
+	"directory/pkg/config"
 )
 
-func load() (cfg *config.Config, err error) {
+func configFromEnv() (cfg *config.Config, err error) {
 	cfg = new(config.Config)
 	err = envconfig.Process("", cfg)
 	return
