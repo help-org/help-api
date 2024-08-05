@@ -2,14 +2,15 @@ package cli
 
 import (
 	"context"
-	version "directory/pkg"
 	"fmt"
-	"golang.org/x/sync/errgroup"
 	"os"
 	"os/signal"
 	"syscall"
 
-	"directory/pkg/database"
+	"golang.org/x/sync/errgroup"
+
+	"directory/internal/services"
+	version "directory/pkg"
 	"directory/pkg/logger"
 	"directory/pkg/router"
 	"directory/pkg/server"
@@ -22,15 +23,20 @@ func (c *Command) Run() error {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 
-	cfg, err := load()
+	cfg, err := configFromEnv()
 	if err != nil {
 		logger.Error(ctx, "error loading configuration", err)
 		os.Exit(1)
 	}
 
+	handler := router.New()
+	for _, service := range services.Services {
+		service.RegisterRoutes(handler)
+	}
+
 	s := &server.Server{
 		Address:           cfg.Server.Address,
-		Handler:           router.New(database.New(cfg.Database.Driver, cfg.Database.Source)),
+		Handler:           handler,
 		ReadHeaderTimeout: cfg.Server.ReadHeaderTimeout,
 	}
 
