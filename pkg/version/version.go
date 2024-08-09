@@ -1,6 +1,6 @@
 package version
 
-var Latest = New("directory", "develop", nil)
+var Latest = New("divisions", "develop", nil)
 
 type Version interface {
 	Application() string

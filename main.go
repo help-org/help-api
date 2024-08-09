@@ -1,6 +1,8 @@
 package main
 
-import "directory/cli"
+import (
+	"directory/cli"
+)
 
 func main() {
 	cli.Run()
