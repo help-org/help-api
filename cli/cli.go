@@ -1,11 +1,11 @@
 package cli
 
-import cli "directory/cli/server"
+import (
+	"directory/cli/server"
+)
 
 func Run() {
-	command := &cli.Command{}
-
-	err := command.Serve()
+	err := server.Serve()
 	if err != nil {
 		return
 	}

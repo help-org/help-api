@@ -2,14 +2,16 @@ package database
 
 import (
 	"context"
-	"directory/pkg/config"
-	"directory/pkg/logger"
 	"errors"
+	"sync"
+	"time"
+
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"sync"
-	"time"
+
+	"directory/pkg/config"
+	"directory/pkg/logger"
 )
 
 var instance Pool

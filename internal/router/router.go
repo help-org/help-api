@@ -1,10 +1,11 @@
 package router
 
 import (
-	"directory/internal/services"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
+
+	"directory/internal/services"
 )
 
 func New(mux http.Handler) http.Handler {

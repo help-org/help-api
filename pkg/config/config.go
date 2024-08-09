@@ -1,9 +1,9 @@
 package config
 
 import (
-	"github.com/joho/godotenv"
 	"time"
 
+	"github.com/joho/godotenv"
 	"github.com/kelseyhightower/envconfig"
 )
 

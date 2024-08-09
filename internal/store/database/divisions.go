@@ -2,6 +2,7 @@ package database
 
 import (
 	"context"
+
 	db "directory/pkg/database"
 	"directory/pkg/types"
 )

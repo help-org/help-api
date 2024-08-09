@@ -1,31 +1,26 @@
-package cli
+package server
 
 import (
 	"context"
-	"directory/internal/router"
-	"directory/internal/services"
-	"directory/internal/services/api"
 	"fmt"
-	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/chi/v5/middleware"
 	"os"
 	"os/signal"
 	"syscall"
 
-	"golang.org/x/sync/errgroup"
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
 
+	"directory/internal/router"
+	"directory/internal/services"
+	"directory/internal/services/api"
 	"directory/internal/store/database"
 	"directory/pkg/config"
 	db "directory/pkg/database"
 	"directory/pkg/logger"
 	"directory/pkg/server"
-	"directory/pkg/version"
 )
 
-type Command struct {
-}
-
-func (c *Command) Serve() error {
+func Serve() error {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 
@@ -37,25 +32,15 @@ func (c *Command) Serve() error {
 	}
 
 	s, err := initialize(cfg)
+	if err != nil {
+		logger.Error(ctx, "error initializing server", err)
+		os.Exit(1)
+	}
 
-	var g errgroup.Group
-	g.Go(func() error {
-		defer stop()
-		logger.Info(ctx, fmt.Sprintf("server listening at %s", cfg.Server.Address),
-			"revision", version.Latest.CommitHash(),
-			"debug", cfg.Debug,
-		)
-		err := s.ListenAndServe(ctx)
-
-		logger.Info(ctx, "server stopped", "err", err)
-		return err
-	})
-
-	<-ctx.Done()
-	ctx = context.Background()
-
-	if err = g.Wait(); err != nil {
-		logger.Error(ctx, "error shutting down server", err)
+	logger.Info(ctx, fmt.Sprintf("server listening at %s", cfg.Server.Address))
+	err = s.ListenAndServe(ctx)
+	if err != nil {
+		logger.Error(ctx, "error starting server", err)
 		os.Exit(1)
 	}
 
