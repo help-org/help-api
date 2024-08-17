@@ -1,4 +1,4 @@
-package cli
+package server
 
 import (
 	"context"
@@ -7,64 +7,67 @@ import (
 	"os/signal"
 	"syscall"
 
-	"golang.org/x/sync/errgroup"
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
 
+	"directory/internal/router"
 	"directory/internal/services"
-	version "directory/pkg"
+	"directory/internal/services/api"
+	"directory/internal/store/database"
+	"directory/pkg/config"
+	db "directory/pkg/database"
 	"directory/pkg/logger"
-	"directory/pkg/router"
 	"directory/pkg/server"
 )
 
-type Command struct {
-}
-
-func (c *Command) Run() error {
+func Serve() error {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 
-	cfg, err := configFromEnv()
+	cfg := &config.Config{}
+	err := cfg.FromEnv()
 	if err != nil {
 		logger.Error(ctx, "error loading configuration", err)
 		os.Exit(1)
 	}
 
-	handler := router.New()
-	for _, service := range services.Services {
-		service.RegisterRoutes(handler)
+	s, err := initialize(cfg)
+	if err != nil {
+		logger.Error(ctx, "error initializing server", err)
+		os.Exit(1)
 	}
 
-	s := &server.Server{
-		Address:           cfg.Server.Address,
-		Handler:           handler,
-		ReadHeaderTimeout: cfg.Server.ReadHeaderTimeout,
-	}
-
-	var g errgroup.Group
-
-	g.Go(func() error {
-		logger.Info(ctx, fmt.Sprintf("server listening at %s", cfg.Server.Address),
-			"revision", version.Latest.CommitHash(),
-			"debug", cfg.Debug,
-		)
-		err := s.ListenAndServe(ctx)
-
-		stop()
-		logger.Info(ctx, "server stopped", "err", err)
-		return err
-	})
-
-	<-ctx.Done()
-	logger.Info(ctx, "shutting down server")
-
-	ctx = context.Background()
-
-	if err = g.Wait(); err != nil {
-		logger.Error(ctx, "error shutting down server", err)
+	logger.Info(ctx, fmt.Sprintf("server listening at %s", cfg.Server.Address))
+	err = s.ListenAndServe(ctx)
+	if err != nil {
+		logger.Error(ctx, "error starting server", err)
 		os.Exit(1)
 	}
 
 	logger.Info(ctx, "server shutdown successfully")
 
 	return err
+}
+
+func initialize(cfg *config.Config) (s *server.Server, err error) {
+	db, err := db.Connect(cfg)
+
+	var services []services.Service
+
+	divisionStore := database.NewDivisionStore(db)
+	divisionService := api.NewDivisionService(*divisionStore)
+	services = append(services, divisionService)
+
+	var middlewares chi.Middlewares
+	middlewares = append(middlewares, middleware.Logger)
+	mux := router.NewMuxer(middlewares, services)
+	handler := router.New(mux)
+
+	s = &server.Server{
+		Address:           cfg.Server.Address,
+		Handler:           handler,
+		ReadHeaderTimeout: cfg.Server.ReadHeaderTimeout,
+	}
+
+	return
 }
