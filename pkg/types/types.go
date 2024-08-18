@@ -3,7 +3,7 @@ package types
 type Division struct {
 	Id       int    `json:"id"`
 	Name     string `json:"name"`
-	Type     Type   `json:"type"`
+	Type     string   `json:"type"`
 	ParentId *int   `json:"parent_id"`
 }
 
