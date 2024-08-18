@@ -10,7 +10,6 @@ import (
 
 	"directory/internal/store/database"
 	"directory/pkg/types"
-	"directory/pkg/logger"
 )
 
 type DivisionService struct {
@@ -29,50 +28,48 @@ func (s *DivisionService) RegisterRoutes(mux *chi.Mux) {
 }
 
 func (s *DivisionService) Create(w http.ResponseWriter, r *http.Request) {
-    ctx := r.Context()
+	ctx := r.Context()
 
-    logger.Info(ctx, "Create Error")
-    body, err := io.ReadAll(r.Body)
-    if err != nil {
-        http.Error(w, "Internal server error", http.StatusInternalServerError)
-        return
-    }
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		http.Error(w, "Failed to read request body", http.StatusInternalServerError)
+		return
+	}
 
-    var data map[string]interface{}
-    if err := json.Unmarshal(body, &data); err != nil {
-        http.Error(w, "Invalid JSON request", http.StatusBadRequest)
-        return
-    }
+	var data map[string]interface{}
+	if err := json.Unmarshal(body, &data); err != nil {
+		http.Error(w, "Failed to unmarshal body as JSON", http.StatusBadRequest)
+		return
+	}
 
-    name := data["name"].(string)
-    dtype := data["type"].(string)
-    parentId := int(data["parentId"].(float64))
+	name := data["name"].(string)
+	divisionType := data["type"].(string)
+	parentId := int(data["parent_id"].(float64))
 
-    division := types.Division{
-        Name: name,
-        Type: dtype,
-        ParentId: &parentId,
-    }
+	division := types.Division{
+		Name:     name,
+		Type:     divisionType,
+		ParentId: &parentId,
+	}
 
-    id, err := s.divisionStore.Create(ctx, division)
+	id, err := s.divisionStore.Create(ctx, division)
+	if err != nil {
+		http.Error(w, "Failed to create division", http.StatusInternalServerError)
+		return
+	}
+	division.Id = id
 
-    if err != nil {
-        http.Error(w, "Error", http.StatusInternalServerError)
-        return
-    }
-
-    logger.Info(ctx, "Error with response")
-
-    response, err := json.Marshal(id)
-    if err != nil {
-        panic(err) // Handle error appropriately
-    }
-    w.WriteHeader(http.StatusOK)
-    _, err = w.Write(response)
-    if err != nil {
-        http.Error(w, "Error writing response", http.StatusInternalServerError)
-        return
-    }
+	response, err := json.Marshal(division)
+	if err != nil {
+		http.Error(w, "Error marshalling JSON", http.StatusInternalServerError)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+	_, err = w.Write(response)
+	if err != nil {
+		http.Error(w, "Error writing response", http.StatusInternalServerError)
+		return
+	}
 }
 
 func (s *DivisionService) FindByID(w http.ResponseWriter, r *http.Request) {
