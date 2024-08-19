@@ -42,3 +42,37 @@ const findByIDQuery = "SELECT d.id, d.name, d.type, d.parent_id FROM directory.d
 const updateQuery = "UPDATE directory.divisions SET name = $2, type = $3, parent_id = $4 WHERE id = $1 RETURNING id"
 
 const deleteQuery = "DELETE FROM directory.divisions WHERE id = $1 RETURNING id"
+
+const recursiveFindByIQuery = "
+	WITH RECURSIVE ParentCTE AS (
+		-- Start with the given record and find its children
+		SELECT id, name, type, parent_id, children_ids
+		FROM directory.divisions
+		WHERE id = $1
+		
+		UNION ALL
+		
+		-- Find all parents of the current record
+		SELECT loc.id, loc.name, loc.type, loc.parent_id, loc.children_ids
+		FROM directory.divisions loc
+		JOIN ParentCTE p ON loc.id = p.parent_id
+	),
+	ChildCTE AS (
+		-- Start with the given record and find its children
+		SELECT id, name, type, parent_id, children_ids
+		FROM directory.divisions
+		WHERE id = $1
+		
+		UNION ALL
+		
+		-- Find all children of the current record
+		SELECT loc.id, loc.name, loc.type, loc.parent_id, loc.children_ids
+		FROM directory.divisions loc
+		JOIN ChildCTE c ON loc.parent_id = c.id
+	)
+	-- Combine results from both ParentCTE and ChildCTE
+	SELECT * FROM ParentCTE
+	UNION
+	SELECT * FROM ChildCTE
+	ORDER BY id;
+"
