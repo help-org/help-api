@@ -40,7 +40,7 @@ func (s *DivisionStore) Delete(ctx context.Context, id int) (deletedId int, err 
 func (s *DivisionStore) FindRelationsByID(ctx context.Context, id int) (divisions []*types.Division, err error) {
 	rows, err := s.store.Query(ctx, recursiveFindByIDQuery, id)
 	if err != nil {
-		log.Fatalf("failed to query row: %v", err)
+		log.Fatalf("failed to query rows: %v", err)
 	}
 
 	for rows.Next() {
