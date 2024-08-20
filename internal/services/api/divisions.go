@@ -74,6 +74,7 @@ func (s *DivisionService) Create(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// TODO add query param for find 1 or recursive
 func (s *DivisionService) FindByID(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -83,12 +84,12 @@ func (s *DivisionService) FindByID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	division, err := s.divisionStore.FindByID(ctx, id)
+	divisions, err := s.divisionStore.FindRelationsByID(ctx, id)
 	if err != nil {
 		http.Error(w, "division id was not found", http.StatusNotFound)
 	}
 
-	response, err := json.Marshal(division)
+	response, err := json.Marshal(divisions)
 	if err != nil {
 		http.Error(w, "Error marshalling JSON", http.StatusInternalServerError)
 		return
