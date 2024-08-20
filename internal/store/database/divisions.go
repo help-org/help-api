@@ -63,6 +63,7 @@ const updateQuery = "UPDATE directory.divisions SET name = $2, type = $3, parent
 
 const deleteQuery = "DELETE FROM directory.divisions WHERE id = $1 RETURNING id"
 
+// WARNING Can this ever be circular?
 const recursiveFindByIDQuery = `
 	WITH RECURSIVE ParentCTE AS (
 		-- Start with the given record and find its children
