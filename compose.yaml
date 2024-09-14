@@ -4,4 +4,4 @@ services:
     image: directory-api:latest
     container_name: directory-api
     ports:
-      - 8080:8080
+      - 6000:6000
