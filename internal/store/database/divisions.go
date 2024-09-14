@@ -40,7 +40,7 @@ func (s *DivisionStore) Delete(ctx context.Context, id int) (err error) {
 }
 
 func (s *DivisionStore) Update(ctx context.Context, division types.Division) (id int, err error) {
-	err = s.store.QueryRow(ctx, updateQuery, division.Name, division.Type, division.ParentId).Scan(&id)
+	err = s.store.QueryRow(ctx, updateQuery, division.Id, division.Name, division.Type, division.ParentId).Scan(&id)
 	return
 }
 
@@ -50,4 +50,4 @@ const findByIDQuery = "SELECT d.id, d.name, d.type, d.parent_id FROM directory.d
 
 const deleteQuery = "DELETE FROM divisions WHERE id = $1"
 
-const updateQuery = "UPDATE directory.divisions SET name = $1, type = $2, parent_id = $3 WHERE id = $4 RETURNING id"
+const updateQuery = "UPDATE directory.divisions SET name = $2, type = $3, parent_id = $4 WHERE id = $1 RETURNING id"

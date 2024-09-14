@@ -123,7 +123,12 @@ func (s *DivisionService) Update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	division := types.Division{Id: id}
+	division, err := s.divisionStore.FindByID(ctx, id)
+	if err != nil {
+		http.Error(w, "Failed to find division", http.StatusNotFound)
+		return
+	}
+
 	if data["name"] != nil {
 		division.Name = data["name"].(string)
 	}
@@ -135,7 +140,7 @@ func (s *DivisionService) Update(w http.ResponseWriter, r *http.Request) {
 		division.ParentId = &parentId
 	}
 
-	_, err = s.divisionStore.Update(ctx, division)
+	_, err = s.divisionStore.Update(ctx, *division)
 	if err != nil {
 		http.Error(w, "Failed to update division", http.StatusInternalServerError)
 		return
