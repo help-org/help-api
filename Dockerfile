@@ -9,6 +9,6 @@ WORKDIR /app
 COPY --from=build /build/directory-api .
 COPY --from=build /build/.env .
 
-EXPOSE 8080
+EXPOSE 6000
 
 ENTRYPOINT ["./directory-api"]
