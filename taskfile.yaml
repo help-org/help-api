@@ -9,3 +9,7 @@ tasks:
       - cmd: docker rm $(docker stop $(docker ps -a -q --filter ancestor=directory-api)) || true
       - cmd: docker build -t directory-api .
       - cmd: docker compose up -d
+  run:
+    cmds:
+      - cmd: CGO_ENABLED=0 go build -o directory-api
+      - cmd: ./directory-api

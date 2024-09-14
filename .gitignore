@@ -1,4 +1,6 @@
 .env
+directory-api
 
 .DS_Store
 .idea/
+.vscode/
