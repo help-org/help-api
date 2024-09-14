@@ -11,5 +11,5 @@ tasks:
       - cmd: docker compose up -d
   run:
     cmds:
-      - cmd: go build
-      - cmd: ./directory
+      - cmd: CGO_ENABLED=0 go build -o directory-api
+      - cmd: ./directory-api
