@@ -23,10 +23,10 @@ func NewDivisionService(divisionsStore database.DivisionStore) *DivisionService 
 }
 
 func (s *DivisionService) RegisterRoutes(mux *chi.Mux) {
-	mux.Get("/divisions/{id}", s.FindByID)
 	mux.Post("/divisions", s.Create)
-	mux.Delete("/divisions/{id}", s.Delete)
+	mux.Get("/divisions/{id}", s.FindByID)
 	mux.Put("/divisions/{id}", s.Update)
+	mux.Delete("/divisions/{id}", s.Delete)
 }
 
 func (s *DivisionService) Create(w http.ResponseWriter, r *http.Request) {
@@ -169,18 +169,11 @@ func (s *DivisionService) Delete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = s.divisionStore.Delete(ctx, id)
+	_, err = s.divisionStore.Delete(ctx, id)
 	if err != nil {
-		if err.Error() == "no division found with id "+strconv.Itoa(id) {
-			http.Error(w, "Division not found", http.StatusNotFound)
-		} else {
-			http.Error(w, "Error deleting division", http.StatusInternalServerError)
-		}
+		http.Error(w, "Cannot delete division", http.StatusConflict)
 		return
 	}
 
-	//     w.WriteHeader(http.StatusNoContent)
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	_, _ = w.Write([]byte(`{"message": "Division deleted successfully"}`))
+	w.WriteHeader(http.StatusNoContent)
 }
