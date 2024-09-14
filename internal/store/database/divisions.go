@@ -39,6 +39,6 @@ const createQuery = "INSERT INTO directory.divisions (name, type, parent_id) VAL
 
 const findByIDQuery = "SELECT d.id, d.name, d.type, d.parent_id FROM directory.divisions d WHERE id = $1"
 
-const deleteQuery = "DELETE FROM directory.divisions WHERE id = $1 RETURNING id"
-
 const updateQuery = "UPDATE directory.divisions SET name = $2, type = $3, parent_id = $4 WHERE id = $1 RETURNING id"
+
+const deleteQuery = "DELETE FROM directory.divisions WHERE id = $1 RETURNING id"
