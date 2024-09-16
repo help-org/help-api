@@ -53,10 +53,15 @@ func initialize(cfg *config.Config) (s *server.Server, err error) {
 	db, err := db.Connect(cfg)
 
 	var services []services.Service
+	// Stores
+	featureStore := database.NewFeatureStore(db)
+	listingStore := database.NewListingStore(db)
 
-	divisionStore := database.NewDivisionStore(db)
-	divisionService := api.NewDivisionService(*divisionStore)
-	services = append(services, divisionService)
+	// Services
+	featuresService := api.NewFeaturesService(*featureStore)
+	frontendService := api.NewFrontendService(*featureStore, *listingStore)
+
+	services = append(services, featuresService, frontendService)
 
 	var middlewares chi.Middlewares
 	middlewares = append(middlewares, middleware.Logger)
