@@ -37,13 +37,13 @@ const findContactsByIDs = `
 		name,
 		type,
 		details
-	FROM directory.contacts
+	FROM contacts
 	WHERE internal_id
-    	= ANY(SELECT unnest(contact_ids) FROM directory.listings WHERE id = $1)
+    	= ANY(SELECT unnest(contact_ids) FROM listings WHERE id = $1)
 `
 
 // Notes
 //LEFT JOIN LATERAL
 //unnest(l.contact_ids) AS contact_id ON true
 //LEFT JOIN
-//directory.contacts c ON c.internal_id = contact_id
+//contacts c ON c.internal_id = contact_id

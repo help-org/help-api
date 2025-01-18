@@ -55,13 +55,13 @@ func (s *FeatureStore) FindRelationsByID(ctx context.Context, id string) (featur
 	return
 }
 
-const createQuery = "INSERT INTO directory.features (name, type, parent_id) VALUES ($1, $2, $3) RETURNING id"
+const createQuery = "INSERT INTO features (name, type, parent_id) VALUES ($1, $2, $3) RETURNING id"
 
-const findByIDQuery = "SELECT id, name, type, parent_id FROM directory.features WHERE id = $1"
+const findByIDQuery = "SELECT id, name, type, parent_id FROM features WHERE id = $1"
 
-const updateQuery = "UPDATE directory.features SET name = $2, type = $3, parent_id = $4 WHERE id = $1 RETURNING id"
+const updateQuery = "UPDATE features SET name = $2, type = $3, parent_id = $4 WHERE id = $1 RETURNING id"
 
-const deleteQuery = "DELETE FROM directory.features WHERE id = $1 RETURNING id"
+const deleteQuery = "DELETE FROM features WHERE id = $1 RETURNING id"
 
 // WARNING Can this ever be circular?
 // If a parent references a child incorrectly -> child references parent correctly
@@ -69,27 +69,27 @@ const recursiveFindByIDQuery = `
 WITH RECURSIVE ParentCTE AS (
 		-- Start with the given record and find its children
 		SELECT internal_id, id, name, type, parent_id
-		FROM directory.features
+		FROM features
 		WHERE id = $1
 		
 		UNION ALL
 		
 		-- Find all parents of the current record
 		SELECT loc.internal_id, loc.id, loc.name, loc.type, loc.parent_id
-		FROM directory.features loc
+		FROM features loc
 		JOIN ParentCTE p ON loc.internal_id = p.parent_id
 	),
 	ChildCTE AS (
 		-- Start with the given record and find its children
 		SELECT internal_id, id, name, type, parent_id
-		FROM directory.features
+		FROM features
 		WHERE id = $1
 		
 		UNION ALL
 		
 		-- Find all children of the current record
 		SELECT loc.internal_id, loc.id, loc.name, loc.type, loc.parent_id
-		FROM directory.features loc
+		FROM features loc
 		JOIN ChildCTE c ON loc.parent_id = c.internal_id
 	)
 	-- Combine results from both ParentCTE and ChildCTE

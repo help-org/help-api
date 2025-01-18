@@ -42,6 +42,6 @@ const findContactsByListingIDs = `
 		l.details,
 		l.contact_ids
 	FROM
-		directory.listings l
+		listings l
 	WHERE l.feature_id = ANY($1)
 `
