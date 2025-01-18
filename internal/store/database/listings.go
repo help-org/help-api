@@ -21,7 +21,7 @@ func (s *ListingStore) FindByListingFeatureInternalIDs(ctx context.Context, feat
 	if err != nil {
 		return nil, fmt.Errorf("query failed: %w", err)
 	}
-	// Iterate over the rows and map to struct
+
 	for rows.Next() {
 		var listing types.Listing
 		if err := rows.Scan(&listing.Id, &listing.Name, &listing.Type, &listing.FeatureId, &listing.Address, &listing.Details, &listing.ContactIds); err != nil {
@@ -29,7 +29,6 @@ func (s *ListingStore) FindByListingFeatureInternalIDs(ctx context.Context, feat
 		}
 		listings = append(listings, &listing)
 	}
-	fmt.Print(listings)
 	return
 }
 
@@ -44,11 +43,5 @@ const findContactsByListingIDs = `
 		l.contact_ids
 	FROM
 		directory.listings l
-
 	WHERE l.feature_id = ANY($1)
 `
-
-//LEFT JOIN LATERAL
-//unnest(l.contact_ids) AS contact_id ON true
-//LEFT JOIN
-//directory.contacts c ON c.internal_id = contact_id

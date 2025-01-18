@@ -4,6 +4,7 @@ import (
 	"context"
 	features "directory/internal/services/api/features"
 	listings "directory/internal/services/api/listings"
+
 	"fmt"
 	"os"
 	"os/signal"
@@ -57,10 +58,11 @@ func initialize(cfg *config.Config) (s *server.Server, err error) {
 	// Stores
 	featureStore := database.NewFeatureStore(db)
 	listingStore := database.NewListingStore(db)
+	contactStore := database.NewContactsStore(db)
 
 	// Services
 	featuresService := features.NewFeatureService(*featureStore, *listingStore)
-	listingService := listings.NewListingService(*featureStore, *listingStore)
+	listingService := listings.NewListingService(*listingStore, *contactStore)
 
 	services = append(services, featuresService, listingService)
 

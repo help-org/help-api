@@ -8,7 +8,6 @@ import (
 	"directory/pkg/types"
 )
 
-// TODO Rename to features
 type FeatureStore struct {
 	store db.Pool
 }
@@ -22,30 +21,30 @@ func (s *FeatureStore) Create(ctx context.Context, feature types.Feature) (creat
 	return
 }
 
-func (s *FeatureStore) FindByID(ctx context.Context, id int) (feature *types.Feature, err error) {
+func (s *FeatureStore) Update(ctx context.Context, feature types.Feature) (updatedId string, err error) {
+	err = s.store.QueryRow(ctx, updateQuery, feature.Id, feature.Name, feature.Type, feature.ParentId).Scan(&updatedId)
+	return
+}
+
+func (s *FeatureStore) FindByID(ctx context.Context, id string) (feature *types.Feature, err error) {
 	feature = &types.Feature{}
 	err = s.store.QueryRow(ctx, findByIDQuery, id).Scan(&feature.Id, &feature.Name, &feature.Type, &feature.ParentId)
 	return
 }
 
-func (s *FeatureStore) Update(ctx context.Context, feature types.Feature) (updatedId int, err error) {
-	err = s.store.QueryRow(ctx, updateQuery, feature.Id, feature.Name, feature.Type, feature.ParentId).Scan(&updatedId)
-	return
-}
-
-func (s *FeatureStore) Delete(ctx context.Context, id int) (deletedId int, err error) {
+func (s *FeatureStore) Delete(ctx context.Context, id string) (deletedId string, err error) {
 	err = s.store.QueryRow(ctx, deleteQuery, id).Scan(&deletedId)
 	return
 }
 
-func (s *FeatureStore) FindRelationsByID(ctx context.Context, id int) (features []*types.Feature, featureIds []int, err error) {
+func (s *FeatureStore) FindRelationsByID(ctx context.Context, id string) (features []*types.Feature, featureIds []int, err error) {
 	rows, err := s.store.Query(ctx, recursiveFindByIDQuery, id)
 	if err != nil {
 		log.Fatalf("failed to query rows: %v", err)
 	}
 	for rows.Next() {
 		var feature types.Feature
-		err := rows.Scan(&feature.InternalId, &feature.Name, &feature.Type, &feature.ParentId)
+		err := rows.Scan(&feature.Id, &feature.InternalId, &feature.Name, &feature.Type, &feature.ParentId)
 		if err != nil {
 			log.Fatalf("failed to scan row: %v", err)
 		}
@@ -58,7 +57,7 @@ func (s *FeatureStore) FindRelationsByID(ctx context.Context, id int) (features 
 
 const createQuery = "INSERT INTO directory.features (name, type, parent_id) VALUES ($1, $2, $3) RETURNING id"
 
-const findByIDQuery = "SELECT d.id, d.name, d.type, d.parent_id FROM directory.features d WHERE id = $1"
+const findByIDQuery = "SELECT id, name, type, parent_id FROM directory.features WHERE id = $1"
 
 const updateQuery = "UPDATE directory.features SET name = $2, type = $3, parent_id = $4 WHERE id = $1 RETURNING id"
 
@@ -71,7 +70,7 @@ WITH RECURSIVE ParentCTE AS (
 		-- Start with the given record and find its children
 		SELECT internal_id, id, name, type, parent_id
 		FROM directory.features
-		WHERE internal_id = $1
+		WHERE id = $1
 		
 		UNION ALL
 		
@@ -84,7 +83,7 @@ WITH RECURSIVE ParentCTE AS (
 		-- Start with the given record and find its children
 		SELECT internal_id, id, name, type, parent_id
 		FROM directory.features
-		WHERE internal_id = $1
+		WHERE id = $1
 		
 		UNION ALL
 		
@@ -94,8 +93,8 @@ WITH RECURSIVE ParentCTE AS (
 		JOIN ChildCTE c ON loc.parent_id = c.internal_id
 	)
 	-- Combine results from both ParentCTE and ChildCTE
-	SELECT internal_id, name, type, parent_id FROM ParentCTE
+	SELECT id, internal_id, name, type, parent_id FROM ParentCTE
 	UNION
-	SELECT internal_id, name, type, parent_id FROM ChildCTE
-	ORDER BY internal_id;
+	SELECT id, internal_id, name, type, parent_id FROM ChildCTE
+	ORDER BY id;
 `

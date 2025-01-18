@@ -3,11 +3,8 @@ package api
 import (
 	"directory/pkg/types"
 	"encoding/json"
-	"fmt"
-	"net/http"
-	"strconv"
-
 	"github.com/go-chi/chi/v5"
+	"net/http"
 
 	"directory/internal/store/database"
 )
@@ -30,17 +27,12 @@ func (s *FeatureService) RegisterRoutes(mux *chi.Mux) {
 
 }
 
-// TODO add query param for find 1 or recursive
 func (s *FeatureService) FindByID(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
-	id, err := strconv.Atoi(chi.URLParam(r, "id"))
-	if err != nil {
-		http.Error(w, "feature id is invalid", http.StatusBadRequest)
-		return
-	}
+	id := chi.URLParam(r, "id")
 
-	features, _, err := s.featureStore.FindRelationsByID(ctx, id)
+	features, err := s.featureStore.FindByID(ctx, id)
 	if err != nil {
 		http.Error(w, "feature id was not found", http.StatusNotFound)
 	}
@@ -59,32 +51,28 @@ func (s *FeatureService) FindByID(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// TODO add query param for find 1 or recursive
 func (s *FeatureService) FindListingsByFeatureId(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
-	featureId, err := strconv.Atoi(chi.URLParam(r, "featureId"))
-	if err != nil {
-		http.Error(w, "feature id is invalid", http.StatusBadRequest)
-		return
-	}
+	featureId := chi.URLParam(r, "featureId")
 
 	featureTree, featureInternalIds, err := s.featureStore.FindRelationsByID(ctx, featureId)
 	if err != nil {
 		http.Error(w, "feature id was not found", http.StatusNotFound)
 	}
 	listings, err := s.listingStore.FindByListingFeatureInternalIDs(ctx, featureInternalIds)
-	listingMap := listingsToMap(listings)
 	if err != nil {
-		http.Error(w, "feature id was not found", http.StatusNotFound)
+		http.Error(w, "listings for feature ids were not found", http.StatusNotFound)
 	}
-	fmt.Println(listingMap)
+
+	listingMap := listingsToMap(listings)
 	for _, feature := range featureTree {
 		listing, match := listingMap[feature.InternalId]
 		if match {
 			feature.Listings = append(feature.Listings, listing)
 		}
 	}
+
 	response, err := json.Marshal(featureTree)
 	if err != nil {
 		http.Error(w, "Error marshalling JSON", http.StatusInternalServerError)
