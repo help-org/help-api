@@ -38,19 +38,19 @@ func (s *FeatureStore) Delete(ctx context.Context, id int) (deletedId int, err e
 	return
 }
 
-func (s *FeatureStore) FindRelationsByID(ctx context.Context, id int) (features []*types.Feature, featureIds []*int, err error) {
+func (s *FeatureStore) FindRelationsByID(ctx context.Context, id int) (features []*types.Feature, featureIds []int, err error) {
 	rows, err := s.store.Query(ctx, recursiveFindByIDQuery, id)
 	if err != nil {
 		log.Fatalf("failed to query rows: %v", err)
 	}
 	for rows.Next() {
 		var feature types.Feature
-		err := rows.Scan(&feature.Id, &feature.Name, &feature.Type, &feature.ParentId)
+		err := rows.Scan(&feature.InternalId, &feature.Name, &feature.Type, &feature.ParentId)
 		if err != nil {
 			log.Fatalf("failed to scan row: %v", err)
 		}
 		features = append(features, &feature)
-		featureIds = append(featureIds, &feature.Id)
+		featureIds = append(featureIds, feature.InternalId)
 	}
 
 	return
@@ -71,7 +71,7 @@ WITH RECURSIVE ParentCTE AS (
 		-- Start with the given record and find its children
 		SELECT internal_id, id, name, type, parent_id
 		FROM directory.features
-		WHERE internal_id = 1
+		WHERE internal_id = $1
 		
 		UNION ALL
 		
@@ -84,7 +84,7 @@ WITH RECURSIVE ParentCTE AS (
 		-- Start with the given record and find its children
 		SELECT internal_id, id, name, type, parent_id
 		FROM directory.features
-		WHERE internal_id = 1
+		WHERE internal_id = $1
 		
 		UNION ALL
 		
@@ -94,8 +94,8 @@ WITH RECURSIVE ParentCTE AS (
 		JOIN ChildCTE c ON loc.parent_id = c.internal_id
 	)
 	-- Combine results from both ParentCTE and ChildCTE
-	SELECT * FROM ParentCTE
+	SELECT internal_id, name, type, parent_id FROM ParentCTE
 	UNION
-	SELECT * FROM ChildCTE
-	ORDER BY id;
+	SELECT internal_id, name, type, parent_id FROM ChildCTE
+	ORDER BY internal_id;
 `

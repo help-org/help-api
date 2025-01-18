@@ -59,7 +59,7 @@ func initialize(cfg *config.Config) (s *server.Server, err error) {
 	listingStore := database.NewListingStore(db)
 
 	// Services
-	featuresService := features.NewFeatureService(*featureStore)
+	featuresService := features.NewFeatureService(*featureStore, *listingStore)
 	listingService := listings.NewListingService(*featureStore, *listingStore)
 
 	services = append(services, featuresService, listingService)

@@ -19,24 +19,23 @@ type Directory struct {
 }
 
 type Feature struct {
-	Id       int         `json:"id"`
-	Name     string      `json:"name"`
-	Type     FeatureType `json:"type"`
-	ParentId *int        `json:"parent_id"`
+	Id         int         `json:"id"`
+	InternalId int         `json:"internal_id"`
+	Name       string      `json:"name"`
+	Type       FeatureType `json:"type"`
+	ParentId   *int        `json:"parent_id"`
+	Listings   []*Listing  `json:"listings"`
 }
 
 type Listing struct {
-	Id   int         `json:"id"`
-	Name string      `json:"name"`
-	Type ListingType `json:"type"`
-	// TODO rename to feature_internal_id FeatureInternalId
-	// TODO should be hidden from response
-	FeatureId  int       `json:"feature_id"`
-	ParentId   int       `json:"parent_id"`
-	Address    string    `json:"address"`
-	ContactIds []int     `json:"contact_ids"`
-	Details    *string   `json:"details"`
-	Contacts   []Contact `json:"contacts"`
+	Id         string      `json:"id"`
+	Name       string      `json:"name"`
+	Type       ListingType `json:"type"`
+	FeatureId  int         `json:"feature_id"`
+	Address    string      `json:"address"`
+	ContactIds []int       `json:"contact_ids"`
+	Details    *string     `json:"details"`
+	Contacts   []Contact   `json:"contacts"`
 	// last_modified
 }
 
