@@ -34,7 +34,7 @@ func (s *FeatureService) FindByID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	features, err := s.featureStore.FindRelationsByID(ctx, id)
+	features, _, err := s.featureStore.FindRelationsByID(ctx, id)
 	if err != nil {
 		http.Error(w, "feature id was not found", http.StatusNotFound)
 	}

@@ -10,24 +10,24 @@ import (
 	"directory/internal/store/database"
 )
 
-type FrontendService struct {
+type ListingService struct {
 	featureStore database.FeatureStore
 	listingStore database.ListingStore
 }
 
-func NewFrontendService(featureStore database.FeatureStore, listingStore database.ListingStore) *FrontendService {
-	return &FrontendService{
+func NewListingService(featureStore database.FeatureStore, listingStore database.ListingStore) *ListingService {
+	return &ListingService{
 		featureStore: featureStore,
 		listingStore: listingStore,
 	}
 }
 
-func (s *FrontendService) RegisterRoutes(mux *chi.Mux) {
+func (s *ListingService) RegisterRoutes(mux *chi.Mux) {
 	mux.Get("/frontend/feature/{featureId}/listing", s.FindListingsByFeatureId)
 }
 
 // TODO add query param for find 1 or recursive
-func (s *FrontendService) FindListingsByFeatureId(w http.ResponseWriter, r *http.Request) {
+func (s *ListingService) FindListingsByFeatureId(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	featureId, err := strconv.Atoi(chi.URLParam(r, "featureId"))
@@ -41,7 +41,7 @@ func (s *FrontendService) FindListingsByFeatureId(w http.ResponseWriter, r *http
 		http.Error(w, "feature id was not found", http.StatusNotFound)
 	}
 
-	featureListings, err := s.listingStore.FindByListingIDs(ctx, featureIds)
+	_, err = s.listingStore.FindByListingIDs(ctx, featureIds)
 	if err != nil {
 		http.Error(w, "feature id was not found", http.StatusNotFound)
 	}

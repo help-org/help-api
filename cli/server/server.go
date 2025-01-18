@@ -2,6 +2,8 @@ package server
 
 import (
 	"context"
+	features "directory/internal/services/api/features"
+	listings "directory/internal/services/api/listings"
 	"fmt"
 	"os"
 	"os/signal"
@@ -12,7 +14,6 @@ import (
 
 	"directory/internal/router"
 	"directory/internal/services"
-	"directory/internal/services/api"
 	"directory/internal/store/database"
 	"directory/pkg/config"
 	db "directory/pkg/database"
@@ -58,10 +59,10 @@ func initialize(cfg *config.Config) (s *server.Server, err error) {
 	listingStore := database.NewListingStore(db)
 
 	// Services
-	featuresService := api.NewFeaturesService(*featureStore)
-	frontendService := api.NewFrontendService(*featureStore, *listingStore)
+	featuresService := features.NewFeatureService(*featureStore)
+	listingService := listings.NewListingService(*featureStore, *listingStore)
 
-	services = append(services, featuresService, frontendService)
+	services = append(services, featuresService, listingService)
 
 	var middlewares chi.Middlewares
 	middlewares = append(middlewares, middleware.Logger)

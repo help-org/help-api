@@ -2,6 +2,7 @@ package database
 
 import (
 	"context"
+	"fmt"
 
 	db "directory/pkg/database"
 	"directory/pkg/types"
@@ -15,8 +16,19 @@ func NewListingStore(s db.Pool) *ListingStore {
 	return &ListingStore{store: s}
 }
 
-func (s *ListingStore) FindByListingIDs(ctx context.Context, featureIds []int) (listings *[]types.Listing, err error) {
-	err = s.store.QueryRow(ctx, findContactsByListingIDs, featureIds).Scan(&listings.Id, &listings.Name, &listings.Type, &listings.ParentId)
+func (s *ListingStore) FindByListingIDs(ctx context.Context, featureIds []*int) (listings []*types.Listing, err error) {
+	rows, err := s.store.Query(ctx, findContactsByListingIDs, featureIds)
+	if err != nil {
+		return nil, fmt.Errorf("query failed: %w", err)
+	}
+	// Iterate over the rows and map to struct
+	for rows.Next() {
+		var listing types.Listing
+		if err := rows.Scan(&listing.Id, &listing.Name, &listing.Type, &listing.ParentId); err != nil {
+			return nil, fmt.Errorf("row scan failed: %w", err)
+		}
+		listings = append(listings, &listing)
+	}
 	return
 }
 
@@ -35,6 +47,6 @@ const findContactsByListingIDs = `
 	LEFT JOIN LATERAL
 		unnest(l.contact_ids) AS contact_id ON true
 	LEFT JOIN
-		contacts c ON c.internal_id = contact_id;
+		contacts c ON c.internal_id = contact_id
 	WHERE l.internal_id in ($1)
 `
