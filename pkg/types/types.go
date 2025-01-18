@@ -1,66 +1,47 @@
 package types
 
-type Division struct {
-	Id       int    `json:"id"`
-	Name     string `json:"name"`
-	Type     string   `json:"type"`
-	ParentId *int   `json:"parent_id"`
-}
-
 type Type string
 
-const (
-	COUNTRY      Type = "country"
-	STATE        Type = "state"
-	PROVINCE     Type = "province"
-	OBLAST       Type = "oblast"
-	LAND         Type = "land"
-	REGION       Type = "region"
-	COMARCA      Type = "comarca"
-	RAION        Type = "raion"
-	DISTRICT     Type = "district"
-	MUNICIPALITY Type = "municipality"
-	COMMUNE      Type = "commune"
-	COMMUNITY    Type = "community"
-	DEPARTMENT   Type = "department"
-	CANTON       Type = "canton"
-	PREFECTURE   Type = "prefecture"
-	COUNTY       Type = "county"
-	GOVERNORATE  Type = "governorate"
-)
-
-type Directory struct {
-	Country string `json:"country"`
-	State   string `json:"state"`
-	City    string `json:"city"`
-
-	Listings []*Listing `json:"listings"`
-	Ads      []*Ad      `json:"ads"`
+type Feature struct {
+	Id         string      `json:"id"`
+	InternalId int         `json:",omitempty" db:"internal_id"`
+	Name       string      `json:"name"`
+	Type       FeatureType `json:"type"`
+	ParentId   *int        `json:"parent_id"`
+	Listings   []*Listing  `json:"listings"`
 }
 
 type Listing struct {
-	Type  ListingType `json:"type"`
-	Name  string      `json:"name"`
-	Phone string      `json:"phone"`
+	Id         string      `json:"id"`
+	InternalId int         `json:",omitempty" db:"internal_id"`
+	Name       string      `json:"name"`
+	Type       ListingType `json:"type"`
+	FeatureId  int         `json:"feature_id"`
+	Address    string      `json:"address"`
+	ContactIds []int       `json:"contact_ids"`
+	Details    *string     `json:"details"`
+	Contacts   []Contact   `json:"contacts"`
 }
 
+type Contact struct {
+	Id         string      `json:"id"`
+	InternalId int         `json:",omitempty" db:"internal_id"`
+	Name       string      `json:"name"`
+	Type       ContactType `json:"type"`
+	Details    *string     `json:"details"`
+}
+
+// TODO Implement these structs
 type Ad struct {
 	Type  AdType `json:"type"`
 	Name  string `json:"name"`
 	Phone string `json:"phone"`
 }
 
-type ListingType string
-
-const (
-	POLICE ListingType = "Police"
-	FIRE   ListingType = "Fire"
-	EMS    ListingType = "EMS"
-)
-
-type AdType string
-
-const (
-	LAWYER AdType = "Lawyer"
-	DOCTOR AdType = "Doctor"
-)
+type Directory struct {
+	Country  string     `json:"country"`
+	State    string     `json:"state"`
+	City     string     `json:"city"`
+	Listings []*Listing `json:"listings"`
+	Ads      []*Ad      `json:"ads"`
+}
